@@ -9,6 +9,7 @@ let myScales: number[][] = [
     ]
 
 
+
 let octaves: number[] = [ 1, 2, 4, 6 ];
 let availReps: number[] = [ 2, 2, 4, 4, 4, 4, 8, 8, 1 ];
 let availTimesigs: number[] =  [6, 6, 6, 10, 7, 8, 8, 8, 8, 8];
