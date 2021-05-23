@@ -9,7 +9,6 @@ let myScales: number[][] = [
     ]
 
 
-
 let octaves: number[] = [ 1, 2, 4, 6 ];
 let availReps: number[] = [ 2, 2, 4, 4, 4, 4, 8, 8, 1 ];
 let availTimesigs: number[] =  [6, 6, 6, 10, 7, 8, 8, 8, 8, 8];
@@ -85,8 +84,12 @@ namespace generativeMelody {
      * @param scale describe parameter here, eg: "Hello"
      */
     //% block
-    export function generateMelody(rootNote: rootNote, scale: scaleSelector): number[] {
-        return [1]
+    export function generateMelody(length: number, rootNote: rootNote, selectedscale: scaleSelector): number[] {
+        let tempMelody = [0]
+        for(let i = 0; i< length; i++){
+            tempMelody[i] = myScales[selectedscale][randint(0,myScales[selectedscale].length)]
+        }
+        return tempMelody
     }
     /**
      * TODO: describe your function here
