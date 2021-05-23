@@ -1,7 +1,8 @@
+let stepLength = 50
 //added a comment to test push
 let noteFreq: number[] = [131, 139, 147, 156, 165, 175, 185, 196, 208, 220, 233, 247, 262, 277, 294, 311, 330, 349, 370, 392, 415, 440, 466, 494, 523, 555, 587, 622, 659, 698, 740, 784, 831, 880, 932, 988]
 let myScales: number[][] = [
-    [0, 4, 5, 7, 10, 12, 13, 13, 5, 10],
+    [0, 4, 5, 7, 10, 12, 13, 13, 5, 10], 
     [0, 1, 4, 5, 7, 8, 11, 12, 13, 13],
     [0, 3, 6, 7, 9, 12, 7, 0, 12, 13],
     [0, 13, 2, 3, 13, 5, 6, 7, 8, 9],
@@ -67,27 +68,56 @@ enum rootNote {
     B = 11
 }
 
-//basic.showNumber(myEnum(0))
-
-function test(){
-    return 5
-}
-
 /**
  * Custom blocks
  */
 //% weight=100 color=#0fbc11 icon=""
 namespace generativeMelody {
+//% block="Alter melody,  melody = $melodyToAlter rootNote = $rootNote scale = $selectedscale"
+    //% length.defl=8
+    //% inlineInputMode=inline
+    
+
     /**
      * TODO: describe your function here
      * @param rootNote describe parameter here, eg: 5 
      * @param scale describe parameter here, eg: "Hello"
      */
-    //% block
+    
+    //% block="Alter melody,  $melodyToAlter=variables_get(Stephen) rootNote = $rootNote scale = $selectedscale"
+    //% length.defl=8
+    //% inlineInputMode=inline
+    export function alterMelody(melodyToAlter: number[], rootNote: rootNote, selectedscale: scaleSelector, amount: number){
+        if(amount > 100){amount = 100}
+        if(amount < 0){amount = 0}
+        let tempMelody = [0]
+        for(let i = 0; i< melodyToAlter.length; i++){
+            if(randint(0,4)>1){
+                tempMelody[i] = myScales[selectedscale][randint(0,myScales[selectedscale].length-1)]
+            } else {
+                tempMelody[i] = melodyToAlter[i]
+            }
+        }
+    }
+
+
+    /**
+     * TODO: describe your function here
+     * @param rootNote describe parameter here, eg: 5 
+     * @param scale describe parameter here, eg: "Hello"
+     */
+    //% block="Generate melody,  length = $length rootNote = $rootNote scale = $selectedscale"
+    //% length.defl=8
+    //% blockSetVariable=myMelody
     export function generateMelody(length: number, rootNote: rootNote, selectedscale: scaleSelector): number[] {
         let tempMelody = [0]
         for(let i = 0; i< length; i++){
-            tempMelody[i] = myScales[selectedscale][randint(0,myScales[selectedscale].length)]
+            if(randint(0,4)>1){
+                tempMelody[i] = myScales[selectedscale][randint(0,myScales[selectedscale].length-1)]
+            } else {
+                tempMelody[i] = 222
+            }
+            
         }
         return tempMelody
     }
@@ -96,8 +126,16 @@ namespace generativeMelody {
      * @param value describe value here, eg: 5
      */
     //% block
-    export function fob(value: number): number {
-        return value <= 1 ? value : fob(value -1) + fob(value - 2);
+    export function playMelody(melodyToPlay: number[], transpose: number) {
+        for(let i = 0; i<melodyToPlay.length; i++){
+            if(melodyToPlay[i] == 222){
+                basic.pause (stepLength*2)
+            } else {
+            music.playTone(noteFreq[melodyToPlay[i]+transpose], stepLength)
+            basic.pause(stepLength)
+            }
+            
+        }
     }
 }
 
