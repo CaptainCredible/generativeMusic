@@ -1,3 +1,4 @@
+//added a comment to test push
 let noteFreq: number[] = [131, 139, 147, 156, 165, 175, 185, 196, 208, 220, 233, 247, 262, 277, 294, 311, 330, 349, 370, 392, 415, 440, 466, 494, 523, 555, 587, 622, 659, 698, 740, 784, 831, 880, 932, 988]
 let myScales: number[][] = [
     [0, 4, 5, 7, 10, 12, 13, 13, 5, 10],
@@ -25,6 +26,7 @@ const int scales[50] = {
   1, 3, 6, 8, 10, 1, 3, 13, 13, 13 //pentatonic
 };
 */
+
 enum scaleSelector {
     //% block="mopho"
     mopho = 0,
