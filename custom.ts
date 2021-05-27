@@ -44,6 +44,13 @@ enum scaleSelector {
     pentatonic = 1,
 }
 
+enum polyphony {
+    //% block="monophonic"
+    monophonic = 0,
+    //% block="polyphonic"
+    polyphonic = 1,
+}
+
 enum rootNote {
     //% block="C"
     C = 0,
@@ -80,7 +87,7 @@ namespace generativeMelody {
     export class Sequence {
         seqData: number[];
         seqLength: number;
-        polyphony: boolean; // false = mono, true = poly
+        polyphony: number; // false = mono, true = poly
         melodyType: string;
         rootNote: number;
         scale: number;
@@ -98,24 +105,26 @@ namespace generativeMelody {
     }
 
     /**
-     * TODO: describe your function here
-     * @param rootNote describe parameter here, eg: 5 
-     * @param scale describe parameter here, eg: "Hello"
+     * Class based melody generator
      */
-    //% block="Create melody,  length = $length rootNote = $rootNote scale = $selectedScale"
+    //% block="Create melody,  length = $length rootNote = $rootNote scale = $selectedScale polyphony = $thisPolyphony"
     //% length.defl=8
     //% blockSetVariable=myMelody
-    export function create(length: number, rootNote: rootNote, selectedScale: scaleSelector): Sequence {
+    //% inlineInputMode=inline
+    export function create(length: number, rootNote: rootNote, selectedScale: scaleSelector, thisPolyphony: polyphony): Sequence {
         let tempMelody = [0]
-        for(let i = 0; i< length; i++){
+        if(thisPolyphony == 0){
+            for(let i = 0; i< length; i++){
             if(randint(0,4)>1){
-                tempMelody[i] = myScales[selectedScale][randint(0,myScales[selectedScale].length-1)]
+                tempMelody[i] = myScales[selectedScale][randint(0,myScales[selectedScale].length-1)]+1
             } else {
-                tempMelody[i] = 222
+                tempMelody[i] = 0
             }
-   
         }
+        }
+        
         let tempSeq = new Sequence
+        tempSeq.polyphony = thisPolyphony
         tempSeq.melodyType="default"
         tempSeq.rootNote = rootNote
         tempSeq.scale = selectedScale
@@ -124,33 +133,31 @@ namespace generativeMelody {
         return tempSeq
     }
 
-//DEBUG
-//let testSeq = create(8,0,0)
-//serial.writeNumbers(testSeq.seqData)
-
-    /**
-     * TODO: describe your function here
-     * @param rootNote describe parameter here, eg: 5 
-     * @param scale describe parameter here, eg: "Hello"
+    /* TODO: Class based melody changer
      */
     
     //% blockSetVariable=myMelody
     //% block="Alter melody,  $melodyToAlter=variables_get(myMelody) amount = $amount rootNote = $rootNote scale = $selectedscale"
     //% inlineInputMode=inline
-    export function alterMelody(melodyToAlter: number[], rootNote: rootNote, selectedscale: scaleSelector, amount: number): number[]{
+    export function AlterMelody(melodyToAlter: Sequence, rootNote: rootNote, selectedScale: scaleSelector, amount: number): Sequence{
         if(amount > 100){amount = 100}
         if(amount < 0){amount = 0}
         let tempMelody = [0]
-        for(let i = 0; i< melodyToAlter.length; i++){
+        for(let i = 0; i< melodyToAlter.seqData.length; i++){
             if(randint(0,4)>1){
-                tempMelody[i] = myScales[selectedscale][randint(0,myScales[selectedscale].length-1)]
+                tempMelody[i] = myScales[selectedScale][randint(0,myScales[selectedScale].length-1)]
             } else {
-                tempMelody[i] = melodyToAlter[i]
+                tempMelody[i] = melodyToAlter.seqData[i]
             }
         }
-        return tempMelody
+        let tempSeq = new Sequence
+        tempSeq.melodyType="default"
+        tempSeq.rootNote = rootNote
+        tempSeq.scale = selectedScale
+        tempSeq.seqData = tempMelody
+        tempSeq.seqLength = tempSeq.seqData.length
+        return tempSeq        
     }
-
 
 
     function noteToBit(noteIn: number): number{
@@ -166,26 +173,6 @@ namespace generativeMelody {
     }
 
 
-    /**
-     * TODO: describe your function here
-     * @param rootNote describe parameter here, eg: 5 
-     * @param scale describe parameter here, eg: "Hello"
-     */
-    //% block="Old Generate polyphonic melody,  length = $length rootNote = $rootNote scale = $selectedscale"
-    //% length.defl=8
-    //% blockSetVariable=myMelodyPoly
-    export function generatePolyMelody(length: number, rootNote: rootNote, selectedscale: scaleSelector): number[] {
-        let tempMelody = [0]
-        for(let i = 0; i< length; i++){
-            if(randint(0,4)>1){
-                tempMelody[i] = myScales[selectedscale][randint(0,myScales[selectedscale].length-1)]
-            } else {
-                tempMelody[i] = 222
-            }
-            
-        }
-        return tempMelody
-    }
 
 
 
@@ -196,10 +183,11 @@ namespace generativeMelody {
     //% block
     export function playMelody(melodyToPlay: Sequence, transpose: number) {
         for(let i = 0; i<melodyToPlay.seqData.length; i++){
-            if(melodyToPlay.seqData[i] == 222){
+            if(melodyToPlay.seqData[i] == 0){   // 0 means no note
                 basic.pause (stepLength*2)
             } else {
-            music.playTone(noteFreq[melodyToPlay.seqData[i]+transpose], stepLength)
+            let noteToPlay = melodyToPlay.seqData[i]-1 //compensate for adding one earlier so note 1 becomes note 0
+            music.playTone(noteFreq[noteToPlay+transpose], stepLength)
             basic.pause(stepLength)
             }
         }
