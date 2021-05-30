@@ -115,12 +115,14 @@ namespace generativeMelody {
         let tempMelody = [0]
         if(thisPolyphony == 0){
             for(let i = 0; i< length; i++){
-            if(randint(0,4)>1){
-                tempMelody[i] = myScales[selectedScale][randint(0,myScales[selectedScale].length-1)]+1
-            } else {
-                tempMelody[i] = 0
+                let tempStep = 0b0000000000000001
+                if(randint(0,4)>1){
+                    tempStep = myScales[selectedScale][randint(0,myScales[selectedScale].length-1)]
+                    tempMelody[i] = noteToBit(tempStep)
+                } else {
+                    tempMelody[i] = 0
+                }
             }
-        }
         }
         
         let tempSeq = new Sequence
@@ -133,19 +135,21 @@ namespace generativeMelody {
         return tempSeq
     }
 
-    /* TODO: Class based melody changer
+    /* Class based melody changer
      */
     
     //% blockSetVariable=myMelody
-    //% block="Alter melody,  $melodyToAlter=variables_get(myMelody) amount = $amount rootNote = $rootNote scale = $selectedscale"
+    //% block="Alter melody,  $melodyToAlter=variables_get(myMelody) amount = $amount rootNote = $rootNote scale = $selectedScale"
     //% inlineInputMode=inline
     export function AlterMelody(melodyToAlter: Sequence, rootNote: rootNote, selectedScale: scaleSelector, amount: number): Sequence{
         if(amount > 100){amount = 100}
         if(amount < 0){amount = 0}
         let tempMelody = [0]
+        let tempStep = 0b0000000000000001
         for(let i = 0; i< melodyToAlter.seqData.length; i++){
             if(randint(0,4)>1){
-                tempMelody[i] = myScales[selectedScale][randint(0,myScales[selectedScale].length-1)]
+                tempStep = myScales[selectedScale][randint(0,myScales[selectedScale].length-1)]
+                tempMelody[i] = noteToBit(tempStep)
             } else {
                 tempMelody[i] = melodyToAlter.seqData[i]
             }
@@ -168,7 +172,6 @@ namespace generativeMelody {
                 noteAsBit = noteAsBit<<i
             }  
         }
-        
         return noteAsBit
     }
 
@@ -182,13 +185,26 @@ namespace generativeMelody {
      */
     //% block
     export function playMelody(melodyToPlay: Sequence, transpose: number) {
+        let notesInSeq = 16
         for(let i = 0; i<melodyToPlay.seqData.length; i++){
             if(melodyToPlay.seqData[i] == 0){   // 0 means no note
                 basic.pause (stepLength*2)
             } else {
-            let noteToPlay = melodyToPlay.seqData[i]-1 //compensate for adding one earlier so note 1 becomes note 0
-            music.playTone(noteFreq[noteToPlay+transpose], stepLength)
-            basic.pause(stepLength)
+            let notesToParse = melodyToPlay.seqData[i]
+            if(melodyToPlay.polyphony == 0){
+                let noteToPlay = notesToParse-1 //compensate for adding one earlier so note 1 becomes note 0
+                music.playTone(noteFreq[noteToPlay+transpose], stepLength)
+                basic.pause(stepLength)
+            } else {
+                let mask = 0b0000000000000001
+                let notesBuffer = []
+                for(let i = 0; i<notesInSeq; i++){
+                    if((notesToParse & mask) > 0){
+                        //notesBuffer
+                    }
+                }
+            }
+            
             }
         }
     }
