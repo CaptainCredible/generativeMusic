@@ -113,12 +113,32 @@ namespace generativeMelody {
     //% inlineInputMode=inline
     export function create(length: number, rootNote: rootNote, selectedScale: scaleSelector, thisPolyphony: polyphony): Sequence {
         let tempMelody = [0]
-        if(thisPolyphony == 0){
+        if(thisPolyphony == 1){ //code for making poly melody
             for(let i = 0; i< length; i++){
+                let numberOfNotesInScale = myScales[selectedScale].length-1
                 let tempStep = 0b0000000000000001
+               let randSelector = randint(0,numberOfNotesInScale) //choose a random not higher than number of notes in the scale
+                if(randint(0,4)>1){
+                    tempStep = myScales[selectedScale][randSelector]
+                    tempMelody[i] = noteToBit(tempStep)
+                    if(randint(0,5)<2){
+                        tempStep = 0b0000000000000001
+                        randSelector += 2 // step randSelector 2 up
+                        randSelector = randSelector % numberOfNotesInScale
+                        tempStep = myScales[selectedScale][randSelector]
+                        let tempBitStep = noteToBit(tempStep)
+                        tempMelody[i] = tempMelody[i] | tempStep
+                    }
+                } else {
+                    tempMelody[i] = 0
+                }
+            }
+        } else { //code for making MONO meody
+            for(let i = 0; i< length; i++){
+                let tempStep = 0
                 if(randint(0,4)>1){
                     tempStep = myScales[selectedScale][randint(0,myScales[selectedScale].length-1)]
-                    tempMelody[i] = noteToBit(tempStep)
+                    tempMelody[i] = tempStep
                 } else {
                     tempMelody[i] = 0
                 }
@@ -126,6 +146,7 @@ namespace generativeMelody {
         }
         
         let tempSeq = new Sequence
+        tempSeq.seqLength = 0b0000000000000000
         tempSeq.polyphony = thisPolyphony
         tempSeq.melodyType="default"
         tempSeq.rootNote = rootNote
@@ -190,21 +211,25 @@ namespace generativeMelody {
             if(melodyToPlay.seqData[i] == 0){   // 0 means no note
                 basic.pause (stepLength*2)
             } else {
-            let notesToParse = melodyToPlay.seqData[i]
-            if(melodyToPlay.polyphony == 0){
-                let noteToPlay = notesToParse-1 //compensate for adding one earlier so note 1 becomes note 0
-                music.playTone(noteFreq[noteToPlay+transpose], stepLength)
-                basic.pause(stepLength)
-            } else {
-                let mask = 0b0000000000000001
-                let notesBuffer = []
-                for(let i = 0; i<notesInSeq; i++){
-                    if((notesToParse & mask) > 0){
-                        //notesBuffer
+                let notesToParse = melodyToPlay.seqData[i]
+                if(melodyToPlay.polyphony == 0){
+                    let noteToPlay = notesToParse-1 //compensate for adding one earlier so note 1 becomes note 0
+                    music.playTone(noteFreq[noteToPlay+transpose], stepLength)
+                    basic.pause(stepLength)
+                } else {
+                    let mask = 0b0000000000000001
+                    let notesBuffer = []
+                    for(let i = 0; i<notesInSeq; i++){
+                        if((notesToParse & mask) > 0){
+                            notesBuffer.push(i)
+                        }
                     }
-                }
-            }
-            
+                    for(let i = 0; i < notesBuffer.length; i++){
+                        let noteToPlay = noteFreq[i+transpose]
+                        music.playTone(noteToPlay, stepLength)//notesBuffer.length)
+                        basic.pause(stepLength)
+                    }
+                } 
             }
         }
     }
