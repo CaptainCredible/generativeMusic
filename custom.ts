@@ -116,13 +116,13 @@ namespace generativeMelody {
         if(thisPolyphony == 1){ //code for making poly melody
             for(let i = 0; i< length; i++){
                 let numberOfNotesInScale = myScales[selectedScale].length-1
-                let tempStep = 0b0000000000000001
+                let tempStep = 0b0000000000000000
                let randSelector = randint(0,numberOfNotesInScale) //choose a random not higher than number of notes in the scale
                 if(randint(0,4)>1){
                     tempStep = myScales[selectedScale][randSelector]
                     tempMelody[i] = noteToBit(tempStep)
-                    if(randint(0,5)<2){
-                        tempStep = 0b0000000000000001
+                    if(randint(0,5)>2){
+                        tempStep = 0b0000000000000000
                         randSelector += 2 // step randSelector 2 up
                         randSelector = randSelector % numberOfNotesInScale
                         tempStep = myScales[selectedScale][randSelector]
@@ -132,6 +132,8 @@ namespace generativeMelody {
                 } else {
                     tempMelody[i] = 0
                 }
+                serial.writeValue("stepGen", i)
+                serial.writeValue("is", tempMelody[i])
             }
         } else { //code for making MONO meody
             for(let i = 0; i< length; i++){
