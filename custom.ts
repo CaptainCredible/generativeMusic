@@ -190,10 +190,8 @@ namespace generativeMelody {
     function noteToBit(noteIn: number): number{
         let noteAsBit = 0b0000000000000000
         if(noteIn !=0){
-            noteAsBit = 0b0000000000000001
-            for(let i = 0; i<noteIn; i++){
-                noteAsBit = noteAsBit<<i
-            }  
+            let shiftAmount = noteIn -1
+            noteAsBit = 0b0000000000000001 << shiftAmount  
         }
         return noteAsBit
     }
