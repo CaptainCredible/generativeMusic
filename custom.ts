@@ -1,7 +1,7 @@
 //use last entry in melody to define poly or mono ? 
 //use classes for melody ?
 
-let stepLength = 50
+let stepLength = 200
 //added a comment to test push
 let noteFreq: number[] = [131, 139, 147, 156, 165, 175, 185, 196, 208, 220, 233, 247, 262, 277, 294, 311, 330, 349, 370, 392, 415, 440, 466, 494, 523, 555, 587, 622, 659, 698, 740, 784, 831, 880, 932, 988]
 let myScales: number[][] = [
@@ -132,8 +132,8 @@ namespace generativeMelody {
                 } else {
                     tempMelody[i] = 0
                 }
-                serial.writeValue("stepGen", i)
-                serial.writeValue("is", tempMelody[i])
+                //serial.writeValue("stepGen", i)
+                //serial.writeValue("is", tempMelody[i])
             }
         } else { //code for making MONO meody
             for(let i = 0; i< length; i++){
@@ -186,6 +186,25 @@ namespace generativeMelody {
         return tempSeq        
     }
 
+    /**
+     * TEST MELODY MAKER
+     */
+    //% block="Create TEST melody,  length = $length rootNote = $rootNote scale = $selectedScale polyphony = $thisPolyphony"
+    //% length.defl=8
+    //% blockSetVariable=myMelody
+    //% inlineInputMode=inline
+    export function TESTMELODY(length: number, rootNote: rootNote, selectedScale: scaleSelector, thisPolyphony: polyphony): Sequence {
+        let tempMelody = [0b0000001000000001,0b0000000010000000,0b0010000000000000,0b1000000000000000,0b0000000000000001,0b0000000010000000,0b0010000000000000,0b1000000000000000,]
+        let tempSeq = new Sequence
+        tempSeq.seqLength = 0b0000000000000000
+        tempSeq.polyphony = thisPolyphony
+        tempSeq.melodyType="default"
+        tempSeq.rootNote = rootNote
+        tempSeq.scale = selectedScale
+        tempSeq.seqData = tempMelody
+        tempSeq.seqLength = tempSeq.seqData.length
+        return tempSeq
+    }
 
     function noteToBit(noteIn: number): number{
         let noteAsBit = 0b0000000000000000
@@ -208,10 +227,14 @@ namespace generativeMelody {
     export function playMelody(melodyToPlay: Sequence, transpose: number) {
         let notesInSeq = 16
         for(let i = 0; i<melodyToPlay.seqData.length; i++){
+            basic.showNumber(i,0)
+            //serial.writeValue("playStep", i)
             if(melodyToPlay.seqData[i] == 0){   // 0 means no note
                 basic.pause (stepLength*2)
+                //serial.writeLine("pause")
             } else {
-                let notesToParse = melodyToPlay.seqData[i]
+                let notesToParse = 0b0000000000000001
+                notesToParse = melodyToPlay.seqData[i]
                 if(melodyToPlay.polyphony == 0){
                     let noteToPlay = notesToParse-1 //compensate for adding one earlier so note 1 becomes note 0
                     music.playTone(noteFreq[noteToPlay+transpose], stepLength)
@@ -220,13 +243,19 @@ namespace generativeMelody {
                     let mask = 0b0000000000000001
                     let notesBuffer = []
                     for(let i = 0; i<notesInSeq; i++){
+                        //serial.writeValue("NOTE", i)
+                        //serial.writeValue("NOTESTOPARSE", notesToParse)
+                        //serial.writeValue("mask", mask)
                         if((notesToParse & mask) > 0){
+                        //    serial.writeValue("added to buffer", i)
                             notesBuffer.push(i)
                         }
+                        mask = mask << 1
                     }
                     for(let i = 0; i < notesBuffer.length; i++){
-                        let noteToPlay = noteFreq[i+transpose]
-                        music.playTone(noteToPlay, stepLength)//notesBuffer.length)
+                        let noteToPlay = notesBuffer[i+transpose]
+                        let freqToPlay = noteFreq[noteToPlay]
+                        music.playTone(freqToPlay, stepLength/notesBuffer.length)//notesBuffer.length)
                         basic.pause(stepLength)
                     }
                 } 
@@ -234,5 +263,3 @@ namespace generativeMelody {
         }
     }
 }
-
-
