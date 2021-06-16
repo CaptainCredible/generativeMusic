@@ -82,7 +82,7 @@ enum rootNote {
  * Custom blocks
  */
 //% weight=100 color=#0fbc11 icon=""
-namespace generativeMelody {
+namespace generativeMusic {
     
     export class Sequence {
         seqData: number[];
@@ -170,9 +170,11 @@ namespace generativeMelody {
         let tempMelody = [0]
         let tempStep = 0b0000000000000001
         for(let i = 0; i< melodyToAlter.seqData.length; i++){
-            if(randint(0,4)>1){
+            if(amount > randint(0,100)){
                 tempStep = myScales[selectedScale][randint(0,myScales[selectedScale].length-1)]
                 tempMelody[i] = noteToBit(tempStep)
+                serial.writeValue("tempStep", tempStep)
+                serial.writeValue("tempStepAsBit", tempMelody[i])
             } else {
                 tempMelody[i] = melodyToAlter.seqData[i]
             }
@@ -182,6 +184,8 @@ namespace generativeMelody {
         tempSeq.rootNote = rootNote
         tempSeq.scale = selectedScale
         tempSeq.seqData = tempMelody
+        serial.writeLine("Melody altered to: ")
+        serial.writeNumbers(tempMelody)
         tempSeq.seqLength = tempSeq.seqData.length
         return tempSeq        
     }
@@ -227,7 +231,7 @@ namespace generativeMelody {
     export function playMelody(melodyToPlay: Sequence, transpose: number) {
         let notesInSeq = 16
         for(let i = 0; i<melodyToPlay.seqData.length; i++){
-            basic.showNumber(i,0)
+            basic.showNumber(i+1,0)
             //serial.writeValue("playStep", i)
             if(melodyToPlay.seqData[i] == 0){   // 0 means no note
                 basic.pause (stepLength*2)
@@ -252,12 +256,20 @@ namespace generativeMelody {
                         }
                         mask = mask << 1
                     }
-                    for(let i = 0; i < notesBuffer.length; i++){
-                        let noteToPlay = notesBuffer[i+transpose]
-                        let freqToPlay = noteFreq[noteToPlay]
-                        music.playTone(freqToPlay, stepLength/notesBuffer.length)//notesBuffer.length)
-                        basic.pause(stepLength)
+                    if(notesBuffer.length > 1){
+                        led.plot(0,0)
                     }
+                    serial.writeValue("Step", i)
+                    if(notesBuffer.length>0){
+                        for(let i = 0; i < notesBuffer.length; i++){
+                            let noteToPlay = notesBuffer[i]+transpose
+                            serial.writeValue("noteToPlay", noteToPlay)
+                            let freqToPlay = noteFreq[noteToPlay%(noteFreq.length-1)]
+                            music.playTone(freqToPlay, stepLength/notesBuffer.length)//notesBuffer.length)
+                            basic.pause(stepLength/notesBuffer.length)
+                        }
+                    }
+                    
                 } 
             }
         }
